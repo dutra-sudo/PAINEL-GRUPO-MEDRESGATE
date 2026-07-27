@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório de Ações — Medresgate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul-escuro: #0d2137;
+    --azul-medio: #1a3a5c;
+    --azul-acento: #1e6fa8;
+    --azul-claro: #e8f2fa;
+    --cinza-fundo: #f4f7fa;
+    --texto: #1c2b3a;
+    --texto-suave: #55697a;
+    --borda: #dbe6ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cinza-fundo);
+    font-family: 'Inter', sans-serif;
+    color: var(--texto);
+  }
+  header {
+    background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
+    color: #fff;
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  header .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 12px;
+    color: #9fc4e0;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    margin: 0 0 12px;
+  }
+  header .meta {
+    font-size: 13px;
+    color: #cfe0ee;
+  }
+  main {
+    max-width: 860px;
+    margin: -24px auto 0;
+    padding: 0 20px 60px;
+  }
+  .section-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--azul-acento);
+    font-weight: 700;
+    margin: 40px 0 16px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(13,33,55,0.06);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    gap: 12px;
+  }
+  .card-header:hover { background: var(--azul-claro); }
+  .card-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--azul-escuro);
+  }
+  .chevron {
+    transition: transform 0.2s ease;
+    color: var(--azul-acento);
+    flex-shrink: 0;
+  }
+  .card.open .chevron { transform: rotate(180deg); }
+  .card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+    padding: 0 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--texto-suave);
+    white-space: pre-wrap;
+  }
+  .card.open .card-body {
+    max-height: 2000px;
+    padding: 0 20px 20px;
+  }
+  .updated {
+    text-align: center;
+    font-size: 12px;
+    color: var(--texto-suave);
+    margin-top: 30px;
+  }
+  footer {
+    text-align: center;
+    padding: 28px 20px;
+    font-size: 12px;
+    color: var(--texto-suave);
+    border-top: 1px solid var(--borda);
+    margin-top: 40px;
+  }
+  .loading, .error {
+    text-align: center;
+    padding: 40px;
+    color: var(--texto-suave);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">B3D Law · Relatório de Acompanhamento</div>
+  <h1>Relatório de Ações — Medresgate</h1>
+  <div class="meta" id="metaLine">Carregando dados... · Matheus Dutra · OAB/MG 122.243</div>
+</header>
+
+<main>
+  <div class="section-title">Processos</div>
+  <div id="lista" class="loading">Carregando processos...</div>
+</main>
+
+<footer>
+  Bartolomeo Bhering Braga Dutra Advogados Associados (B3D Law)<br>
+  Matheus Dutra · OAB/MG 122.243
+</footer>
+
+<script>
+  var CONFIG = {
+    clientName: 'Medresgate',
+    scriptUrl: 'https://script.google.com/macros/s/AKfycbxQTyU4sl5w0vG3Mr2DdXQv-E5G7fW0zaS1Js9epUeuUdovN5MCYB5IbwYB7L1LrC2eQg/exec'
+  };
+
+  function renderError(msg) {
+    document.getElementById('lista').innerHTML = '<div class="error">' + msg + '</div>';
+  }
+
+  function toggleCard(el) {
+    el.parentElement.classList.toggle('open');
+  }
+
+  function renderData(data) {
+    var lista = document.getElementById('lista');
+    lista.classList.remove('loading');
+    lista.innerHTML = '';
+
+    if (!data.processos || data.processos.length === 0) {
+      lista.innerHTML = '<div class="error">Nenhum processo encontrado no relatório.</div>';
+      return;
+    }
+
+    data.processos.forEach(function (texto, idx) {
+      var linhas = texto.split('\n');
+      var titulo = linhas[0] || ('Processo ' + (idx + 1));
+      var resto = linhas.slice(1).join('\n');
+
+      var card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML =
+        '<div class="card-header" onclick="toggleCard(this)">' +
+          '<div class="card-title">' + titulo + '</div>' +
+          '<div class="chevron">▾</div>' +
+        '</div>' +
+        '<div class="card-body">' + (resto || texto) + '</div>';
+      lista.appendChild(card);
+    });
+
+    var d = new Date(data.updatedAt);
+    document.getElementById('metaLine').textContent =
+      'Atualizado em ' + d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR') +
+      ' · Matheus Dutra · OAB/MG 122.243';
+  }
+
+  window.handleData = function (data) {
+    try {
+      renderData(data);
+    } catch (err) {
+      renderError('Erro ao processar os dados recebidos.');
+    }
+  };
+
+  (function loadData() {
+    var script = document.createElement('script');
+    script.src = CONFIG.scriptUrl + '?callback=handleData&t=' + Date.now();
+    script.onerror = function () {
+      renderError('Não foi possível carregar os dados. Verifique se o Apps Script foi implantado como "Qualquer pessoa" e se a URL em CONFIG.scriptUrl está correta.');
+    };
+    document.body.appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório de Ações — Grupo Medresgate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul-escuro: #0d2137;
+    --azul-medio: #1a3a5c;
+    --azul-acento: #1e6fa8;
+    --azul-claro: #e8f2fa;
+    --cinza-fundo: #f4f7fa;
+    --texto: #1c2b3a;
+    --texto-suave: #55697a;
+    --borda: #dbe6ee;
+
+    --status-andamento-bg: #fdf3e3; --status-andamento-fg: #b06a00;
+    --status-vitoria-bg: #eaf5ef;   --status-vitoria-fg: #1a7a4a;
+    --status-encerrado-bg: #f0f4f8; --status-encerrado-fg: #5a7080;
+    --status-ajuizar-bg: #fff3e0;   --status-ajuizar-fg: #e65100;
+    --status-audiencia-bg: #e3f2fd; --status-audiencia-fg: #1565c0;
+    --status-suspenso-bg: #ede7f6;  --status-suspenso-fg: #512da8;
+    --status-recurso-bg: #fce4ec;   --status-recurso-fg: #c62828;
+    --status-acordo-bg: #e8f5e9;    --status-acordo-fg: #2e7d32;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--cinza-fundo);
+    font-family: 'Inter', sans-serif;
+    color: var(--texto);
+  }
+  header {
+    background: linear-gradient(135deg, var(--azul-escuro), var(--azul-medio));
+    color: #fff;
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  header .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 12px;
+    color: #9fc4e0;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    margin: 0 0 12px;
+  }
+  header .meta {
+    font-size: 13px;
+    color: #cfe0ee;
+  }
+  main {
+    max-width: 900px;
+    margin: -24px auto 0;
+    padding: 0 20px 60px;
+  }
+  .section-label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--azul-medio);
+    font-weight: 700;
+    margin: 40px 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--azul-acento);
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    margin: 14px 0;
+    box-shadow: 0 1px 3px rgba(13,33,55,0.06);
+    overflow: hidden;
+  }
+  .card.flagged { border: 1px solid #e65100; }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 20px;
+    cursor: pointer;
+    gap: 12px;
+  }
+  .card-header:hover { background: var(--azul-claro); }
+  .card-header-left { flex: 1; min-width: 0; }
+  .card-number {
+    display: inline-block;
+    font-weight: 700;
+    color: var(--azul-acento);
+    margin-right: 8px;
+  }
+  .card-processo {
+    font-size: 12px;
+    color: var(--texto-suave);
+    margin-bottom: 4px;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--azul-escuro);
+    line-height: 1.4;
+  }
+  .card-partes {
+    font-size: 13px;
+    color: var(--texto-suave);
+    margin-top: 4px;
+  }
+  .card-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    background: var(--status-andamento-bg);
+    color: var(--status-andamento-fg);
+  }
+  .chevron {
+    transition: transform 0.2s ease;
+    color: var(--azul-acento);
+  }
+  .card.open .chevron { transform: rotate(180deg); }
+  .card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .card.open .card-body { max-height: 3000px; }
+  .card-body-inner {
+    padding: 0 20px 20px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--texto);
+  }
+  .card-body-inner p { margin: 0 0 12px; }
+  .highlight {
+    border-left: 3px solid var(--azul-acento);
+    background: var(--azul-claro);
+    padding: 12px 14px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13.5px;
+    margin: 14px 0;
+  }
+  .highlight.alert {
+    border-left: 3px solid #f9a825;
+    background: #fff8e1;
+  }
+  .flag-note {
+    border-left: 3px solid #e65100;
+    background: #fff3e0;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    margin: 14px 0;
+    color: #a34700;
+  }
+  footer {
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 12px;
+    color: var(--texto-suave);
+    border-top: 1px solid var(--borda);
+    margin-top: 30px;
+  }
+  footer .firm {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--azul-escuro);
+    margin-bottom: 6px;
+  }
+  @media (max-width: 600px) {
+    header h1 { font-size: 24px; }
+    .card-header { flex-direction: column; }
+    .card-header-right { align-self: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Bartolomeo Bhering Braga Dutra Advogados</div>
+  <h1>Relatório de Ações / Grupo Medresgate</h1>
+  <div class="meta">Atualizado em 27 de julho de 2026 · Matheus Dutra · OAB/MG 122.243</div>
+</header>
+
+<main>
+  <div class="section-label">Processos em andamento</div>
+
+  <!-- 1 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 0800070-45.2025.8.19.0020 · TJRJ</div>
+        <div class="card-title"><span class="card-number">1.</span>Ação de Cobrança</div>
+        <div class="card-partes">PROCORAÇÃO x MUNICÍPIO DE DUAS BARRAS</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>A Procoração ajuizou ação de cobrança contra o Município de Duas Barras, referente a valores do fundo de saúde municipal no montante de R$ 29.311,00, decorrentes de contrato firmado após vitória em pregão presencial para realização de exames laboratoriais e hospitalares de alta e média complexidade.</p>
+        <p>O Município contestou alegando que o fundo de saúde não possui personalidade jurídica própria.</p>
+        <div class="highlight alert">
+          <strong>Prazo em aberto (desde 27/07/2026):</strong> especificação de provas. Ainda estamos definindo quais provas apresentar — nota fiscal, contrato assinado e guia de transferência de paciente assinada pelo médico — e se pediremos oitiva dos médicos responsáveis e juntada dos documentos da licitação.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 0800525-30.2022.8.19.0015 · TJRJ</div>
+        <div class="card-title"><span class="card-number">2.</span>Ação Anulatória de Sanções Administrativas</div>
+        <div class="card-partes">PROCORAÇÃO x MUNICÍPIO DE CANTAGALO</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>Em 2022, o Município de Cantagalo aplicou penalidade máxima (rescisão contratual, suspensão de 5 anos para licitar e multa de R$ 7.300,00) sem conceder direito de defesa ou produção de provas, após notificações enviadas a e-mail e destinatário incorretos. A multa chegou a ser compensada unilateralmente pelo Município em pagamentos devidos à empresa.</p>
+        <p>Ajuizamos ação buscando anular as sanções. O pedido liminar foi negado em 2023, mas, após o Município juntar a cópia integral do processo administrativo, comprovamos as violações ao direito de defesa.</p>
+        <div class="highlight">
+          <strong>Situação atual:</strong> alegações finais apresentadas em 05/05/2026, já respondidas pela parte contrária. Aguardando decisão do juiz.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 0800661-22.2025.8.19.0015 · TJRJ</div>
+        <div class="card-title"><span class="card-number">3.</span>Mandado de Segurança</div>
+        <div class="card-partes">MJ WERMELINGER FERRAZ ME (hoje Med Resgate) x MUNICÍPIO DE CANTAGALO</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>A empresa participou de pregão eletrônico para prestação de serviços de ambulância UTI Móvel, apresentando a proposta mais barata (R$ 1.200.000,00), mas foi desclassificada. O Município alega vínculo material com a empresa Pró Coração (suspensa de licitar até 2027), por coincidência de endereço, e-mail e parentesco entre as sócias. A empresa argumenta que são pessoas jurídicas distintas e que a Lei de Licitações não prevê punição automática por vínculo societário sem prova de fraude.</p>
+        <div class="highlight alert">
+          <strong>Descumprimento de liminar:</strong> o juiz determinou, com urgência, que os impetrados cumpram o acórdão. A empresa LDA Cantagalo Ltda (segunda colocada, que assinou o contrato) foi intimada a ingressar no processo.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 0129282-15.2025.8.19.0001 · TJRJ</div>
+        <div class="card-title"><span class="card-number">4.</span>Ação de Cobrança c/c Reconvenção</div>
+        <div class="card-partes">MED RESGATE LTDA x MUNICÍPIO DE SUMIDOURO</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>A Med Resgate prestou serviço emergencial de locação de ambulância ao Município de Sumidouro por 147 dias, sem receber o pagamento devido. Diante da inadimplência, o título foi levado a protesto. O Município ajuizou ação para cancelar o protesto, e a Med Resgate apresentou defesa e reconvenção cobrando R$ 676.767,48, com provas de má-fé da prefeitura.</p>
+        <p>Em audiência, a juíza determinou suspensão do processo por 90 dias para tentativa de acordo extrajudicial. O Município não respondeu às tentativas de negociação.</p>
+        <div class="highlight alert">
+          <strong>Pendência:</strong> pedimos, desde 15/05/2026, a retomada do processo desde o início, já que não houve acordo.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 - FLAGGED -->
+  <div class="card flagged">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 0800201-66.2024.8.19.0016 · TJRJ</div>
+        <div class="card-title"><span class="card-number">5.</span>Ação Renovatória de Locação</div>
+        <div class="card-partes">FC AUTO POSTO LTDA x ADAQUIR JOSÉ ROCHA FERRAZ</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <div class="flag-note">⚠ Este processo não menciona o Grupo Medresgate no texto do relatório — verificar se pertence de fato a este cliente antes de publicar.</div>
+        <p>Ação renovatória de contrato de locação de posto de combustíveis (vigência 11/09/2024 a 11/09/2029), aluguel mensal proposto de R$ 8.500,00. Contestação apresentada em 06/10/2025 e posteriormente impugnada.</p>
+        <div class="highlight">
+          <strong>Situação atual:</strong> aguardando movimentação do juízo, que deve intimar as partes para especificação de provas.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 3000018-73.2026.8.19.0027 · Vara Única de Laje do Muriaé</div>
+        <div class="card-title"><span class="card-number">6.</span>Procedimento Comum Cível (Fazenda Pública)</div>
+        <div class="card-partes">MED RESGATE LTDA x MUNICÍPIO DE LAJE DO MURIAÉ</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>Ação protocolada, sob relatoria da juíza Letícia de Souza Branquinho.</p>
+        <div class="highlight alert">
+          <strong>Pendência:</strong> a secretaria informou que era necessária uma guia de custas complementar. A nova guia foi emitida e enviada ao cliente em 27/07/2026.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo não identificado no relatório</div>
+        <div class="card-title"><span class="card-number">7.</span>Mandado de Segurança</div>
+        <div class="card-partes">MED RESGATE x MUNICÍPIO DE SAPUCAIA / SECRETÁRIO DE SAÚDE DE SAPUCAIA</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>Ação protocolada e guia de custas paga. Foi apresentado pedido de alteração do mandado de segurança, considerando que o certame foi postergado, incluindo indicação de médico com RQE.</p>
+        <p><strong>Teses centrais:</strong> decisão isolada da Secretária de Saúde; exigência de requisito não previsto em lei; usurpação de competência do Conselho Federal de Medicina; limitação ilegal e inconstitucional ao exercício da medicina.</p>
+        <div class="highlight alert">
+          <strong>Pendência:</strong> pedir agendamento do despacho da liminar — guias já pagas e juntadas.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8 - FLAGGED -->
+  <div class="card flagged">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 3000196-55.2026.8.19.0016</div>
+        <div class="card-title"><span class="card-number">8.</span>Produção Antecipada de Provas</div>
+        <div class="card-partes">ADAQUIR e MARIA x CONSTRUTORA (nome não informado no relatório)</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <div class="flag-note">⚠ Este processo também não menciona o Grupo Medresgate — verificar se pertence a este cliente antes de publicar.</div>
+        <p>Construção de prédio ao lado do imóvel dos autores causou dano estrutural e estético, sem correção completa até o momento.</p>
+        <div class="highlight alert">
+          <strong>Pendência:</strong> guia de custas veio com valor incorreto; a secretaria corrigiu o valor em 27/07/2026, faltando recolher os fundos obrigatórios (Fundperj, Funperj, Funarpen, Fundac-Pguerj, Funpgalrerj, Funpgt) e demais atos.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 3000111-28.2026.8.19.0062</div>
+        <div class="card-title"><span class="card-number">9.</span>Ação de Cobrança</div>
+        <div class="card-partes">MED RESGATE x HOSPITAL SÃO FRANCISCO DE PAULA (unidade Trajano de Moraes)</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>Ação protocolada, com custas pagas.</p>
+        <div class="highlight alert">
+          <strong>Prazo relevante:</strong> o réu foi citado em 25/07/2026. O prazo de 15 dias úteis para contestação começa em 28/07/2026. Nossa avaliação interna é de que as provas atuais podem ser impugnadas com facilidade — recomendável reforçar o conjunto probatório.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 3038497-19.2026.8.19.0001 · 7ª Vara Empresarial da Capital</div>
+        <div class="card-title"><span class="card-number">10.</span>Ação Indenizatória (uso de imagem/marca)</div>
+        <div class="card-partes">AMIL ASSISTÊNCIA MÉDICA INTERNACIONAL S.A. x MED RESGATE LTDA</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>Ação de indenização pelo uso da imagem/marca da AMIL nas ambulâncias da Med Resgate. O pedido é de apuração do valor da indenização após sentença, atualmente em fase de liquidação.</p>
+        <div class="highlight">
+          <strong>Proposta de acordo:</strong> a AMIL entrou em contato propondo acordo mediante pagamento de R$ 32.000,00. Defesa apresentada em 22/06/2026; aguardando intimação da parte autora para impugnação da contestação.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <div class="card-header-left">
+        <div class="card-processo">Processo n° 3000044-28.2026.8.19.0009 · Vara de Bom Jardim</div>
+        <div class="card-title"><span class="card-number">11.</span>Mandado de Segurança c/ Pedido Liminar</div>
+        <div class="card-partes">MED RESGATE x MUNICÍPIO DE BOM JARDIM</div>
+      </div>
+      <div class="card-header-right">
+        <span class="badge">Em andamento</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-body-inner">
+        <p>Pedido liminar de reinserção no Processo Licitatório n° 6622/2025 (Edital n° 105/2025), para prestação de serviços de saúde. A empresa foi inabilitada sob alegação de ausência de CNAE correspondente ao objeto licitado, apesar de ter apresentado todos os documentos exigidos em lei.</p>
+        <div class="highlight alert">
+          <strong>Pendência:</strong> aguardando a secretaria expedir guia complementar de custas. Contato feito na semana de 20/07/2026; retorno esperado em 27/07/2026.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="firm">Bartolomeo Bhering Braga Dutra Advogados Associados</div>
+  Matheus Dutra · OAB/MG 122.243 | Felipe Bartolomeo · OAB/MG 95.264<br>
+  Atualizado em 27 de julho de 2026
+</footer>
+
+<script>
+  function toggleCard(headerEl) {
+    headerEl.parentElement.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
